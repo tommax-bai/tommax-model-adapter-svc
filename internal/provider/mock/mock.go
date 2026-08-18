@@ -27,6 +27,11 @@ func (p *Provider) Name() string { return "mock" }
 
 func (p *Provider) Submit(_ context.Context, job *core.Job, update core.UpdateFn) error {
 	req := job.Request
+	// 视频能力走独立流程（video.go）。
+	if req.Capability == core.CapVideoText2Vid || req.Capability == core.CapVideoImg2Vid {
+		go p.runVideo(job, update)
+		return nil
+	}
 	n := paramInt(req.Params, "n", 1, 1, 4)
 	w := paramInt(req.Params, "width", 1024, 64, 2048)
 	h := paramInt(req.Params, "height", 1024, 64, 2048)
