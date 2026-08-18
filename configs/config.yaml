@@ -1,0 +1,9 @@
+server:
+  grpcAddr: "${TOMMAX_MODELADAPTER_GRPC_ADDR:-:9101}"
+log:
+  level: "${TOMMAX_MODELADAPTER_LOG_LEVEL:-info}"
+  format: "${TOMMAX_MODELADAPTER_LOG_FORMAT:-text}"
+mock:
+  latencyMs: 4000
+job:
+  ttlMinutes: 60
