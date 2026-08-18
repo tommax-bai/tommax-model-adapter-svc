@@ -85,14 +85,15 @@ func (p *Provider) runVideo(job *core.Job, update core.UpdateFn) {
 		}
 	}
 
-	out := filepath.Join(dir, "out.mp4")
+	// WebM/VP8：开放编解码器，任何 Chromium 变体都能解（H.264 在部分环境缺解码器）。
+	out := filepath.Join(dir, "out.webm")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, ffmpeg, "-y",
 		"-framerate", fmt.Sprint(videoFPS),
 		"-i", filepath.Join(dir, "f_%04d.png"),
-		"-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
-		"-movflags", "+faststart", out)
+		"-c:v", "libvpx", "-b:v", "1M", "-pix_fmt", "yuv420p",
+		"-deadline", "realtime", "-cpu-used", "8", out)
 	if outBytes, err := cmd.CombinedOutput(); err != nil {
 		tail := outBytes
 		if len(tail) > 400 {
@@ -110,7 +111,7 @@ func (p *Provider) runVideo(job *core.Job, update core.UpdateFn) {
 	}
 	update(job.ID, core.Result{
 		Status: core.StatusSucceeded, Progress: 100,
-		Outputs: []core.Output{{Data: data, MimeType: "video/mp4", Width: w, Height: h}},
+		Outputs: []core.Output{{Data: data, MimeType: "video/webm", Width: w, Height: h}},
 	})
 }
 
